@@ -78,9 +78,7 @@ namespace PCPOS.Global
 	                            ,roba_prodaja.naziv
                                 ,{tableName}.{dateColumnName} AS datum
 	                            ,{tableName}.kolicina AS dokument_kolicina
-	                            ,caffe_normativ.kolicina AS normativ_kolicina
                             FROM {tableName} 
-                            LEFT JOIN caffe_normativ ON caffe_normativ.sifra = {tableName}.{articleCodeColumnName}
                             LEFT JOIN roba_prodaja ON roba_prodaja.sifra = {tableName}.{articleCodeColumnName}
                             WHERE roba_prodaja.sifra = '{code}' AND {tableName}.{dateColumnName} >= '{date.ToString("dd-MM-yyyy HH:mm")}'";
             return classSQL.select(query, tableName).Tables[0];
@@ -97,7 +95,26 @@ namespace PCPOS.Global
         /// <param name="dateColumnName"></param>
         /// <param name="articleCodeColumnName"></param>
         /// <returns></returns>
-        public static DataTable GetDocumentItems(string code, string tableName, string tableId, string itemsTableName, string itemsId, string dateColumnName, string articleCodeColumnName)
+        public static DataTable GetDocumentItems(string code, string tableName, string tableId, string itemsTableName, string itemsId, string dateColumnName, string articleCodeColumnName, string skladiste, string od, string doo)
+        {
+
+            string query = $@"SELECT {tableName}.{tableId} AS sifra_dokument
+                                ,roba_prodaja.sifra
+	                            ,roba_prodaja.naziv
+                                ,{tableName}.{dateColumnName} AS datum
+	                            ,{itemsTableName}.kolicina AS dokument_kolicina
+	                            ,caffe_normativ.kolicina AS normativ_kolicina
+                            FROM {tableName} 
+                            LEFT JOIN {itemsTableName} ON {itemsTableName}.{itemsId} = {tableName}.{tableId}
+                            LEFT JOIN caffe_normativ ON caffe_normativ.sifra = {itemsTableName}.{articleCodeColumnName}
+                            LEFT JOIN roba_prodaja ON roba_prodaja.sifra = caffe_normativ.sifra_normativ
+                            WHERE roba_prodaja.sifra = '{code}' AND {tableName}.{dateColumnName} >= '{od}' AND {tableName}.{dateColumnName} <= '{doo}' 
+                                  AND roba_prodaja.id_skladiste = '{skladiste}'
+                            ORDER BY datum";
+            return classSQL.select(query, tableName).Tables[0];
+        }
+
+        public static DataTable GetDocumentItemsObrazac(string code, string tableName, string tableId, string itemsTableName, string itemsId, string dateColumnName, string articleCodeColumnName, string skladiste, string od, string doo)
         {
             DateTime date = GetPocetnoDate();
             string query = $@"SELECT {tableName}.{tableId} AS sifra_dokument
@@ -109,9 +126,12 @@ namespace PCPOS.Global
                             FROM {tableName} 
                             LEFT JOIN {itemsTableName} ON {itemsTableName}.{itemsId} = {tableName}.{tableId}
                             LEFT JOIN caffe_normativ ON caffe_normativ.sifra = {itemsTableName}.{articleCodeColumnName}
-                            LEFT JOIN roba_prodaja ON roba_prodaja.sifra = {itemsTableName}.{articleCodeColumnName}
-                            WHERE roba_prodaja.sifra = '{code}' AND {tableName}.{dateColumnName} >= '{date.ToString("dd-MM-yyyy HH:mm")}'";
+                            LEFT JOIN roba_prodaja ON roba_prodaja.sifra = caffe_normativ.sifra_normativ
+                            WHERE roba_prodaja.sifra = '{code}' AND {tableName}.{dateColumnName} >= '{od}' AND {tableName}.{dateColumnName} <= '{doo}' 
+                                  AND roba_prodaja.id_skladiste = '{skladiste}' AND otpremnica_stavke.naplaceno_fakturom = FALSE 
+                            ORDER BY datum";
             return classSQL.select(query, tableName).Tables[0];
         }
+
     }
 }
