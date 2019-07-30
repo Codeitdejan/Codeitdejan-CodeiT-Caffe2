@@ -592,7 +592,7 @@
             this.dtpDoDatuma.CustomFormat = "dd-MM-yyyy HH:mm";
             this.dtpDoDatuma.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.dtpDoDatuma.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpDoDatuma.Location = new System.Drawing.Point(124, 63);
+            this.dtpDoDatuma.Location = new System.Drawing.Point(121, 54);
             this.dtpDoDatuma.Margin = new System.Windows.Forms.Padding(4);
             this.dtpDoDatuma.Name = "dtpDoDatuma";
             this.dtpDoDatuma.Size = new System.Drawing.Size(276, 26);
@@ -603,7 +603,7 @@
             this.dtpOdDatuma.CustomFormat = "dd-MM-yyyy HH:mm";
             this.dtpOdDatuma.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
             this.dtpOdDatuma.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpOdDatuma.Location = new System.Drawing.Point(124, 32);
+            this.dtpOdDatuma.Location = new System.Drawing.Point(121, 23);
             this.dtpOdDatuma.Margin = new System.Windows.Forms.Padding(4);
             this.dtpOdDatuma.Name = "dtpOdDatuma";
             this.dtpOdDatuma.Size = new System.Drawing.Size(276, 26);
@@ -614,7 +614,7 @@
             // 
             this.label7.AutoSize = true;
             this.label7.BackColor = System.Drawing.Color.Transparent;
-            this.label7.Location = new System.Drawing.Point(15, 66);
+            this.label7.Location = new System.Drawing.Point(12, 57);
             this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(96, 20);
@@ -625,7 +625,7 @@
             // 
             this.label4.AutoSize = true;
             this.label4.BackColor = System.Drawing.Color.Transparent;
-            this.label4.Location = new System.Drawing.Point(15, 36);
+            this.label4.Location = new System.Drawing.Point(12, 27);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(96, 20);
@@ -711,6 +711,7 @@
             this.txtSifraArtikla.Size = new System.Drawing.Size(205, 26);
             this.txtSifraArtikla.TabIndex = 2;
             this.txtSifraArtikla.TextChanged += new System.EventHandler(this.txtSifraArtikla_TextChanged_1);
+            this.txtSifraArtikla.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtSifraArtikla_KeyDown);
             // 
             // label2
             // 
