@@ -12,7 +12,7 @@ namespace PCPOS.Caffe
 {
     public partial class frmStoloviZaNaplatuCustom : Form
     {
-        public static bool testVariable=false;
+        public static bool testVariable = false;
 
         public UDS UDSAPI { get; set; }
         public PartnerCompanyInfoType udsCompany { get; set; }
@@ -511,7 +511,8 @@ where id= (select id_adresa_dostave from na_stol where id_stol = '" + _odabraniS
                     row["id_podgrupa"] = dg(i, "id_podgrupa");
                     DTsend.Rows.Add(row);
 
-                    provjera_sql(classSQL.delete("DELETE FROM na_stol WHERE id_stol='" + _odabraniStol + "' AND broj_narudzbe='" + dg(i, "runda") + "' AND sifra='" + sifra + "' and dod = '" + dg(i, "dod") + "'"));
+                    provjera_sql(classSQL.delete("INSERT INTO na_stol_naplaceno SELECT * FROM na_stol WHERE na_stol.id_stol='" + _odabraniStol + "' AND  na_stol.broj_narudzbe='" + dg(i, "runda") + "' AND  na_stol.sifra='" + sifra + "' and  na_stol.dod = '" + dg(i, "dod") + "'"));
+                    provjera_sql(classSQL.delete("DELETE FROM na_stol WHERE id_stol='" + _odabraniStol + "' AND  broj_narudzbe='" + dg(i, "runda") + "' AND  sifra='" + sifra + "' and  dod = '" + dg(i, "dod") + "'"));
 
                     if (sifra.Length > 4)
                     {
@@ -844,10 +845,10 @@ where id= (select id_adresa_dostave from na_stol where id_stol = '" + _odabraniS
         {
             //if (DTpostavkePrinter.Rows[0]["windows_printer_name2"].ToString() != "Nije instaliran" || DTpostavkePrinter.Rows[0]["windows_printer_name3"].ToString() != "Nije instaliran")
             {
-                int max = 0;
-                var MaxID2 = dgw.Rows.Cast<DataGridViewRow>()
-                            .Max(r => int.TryParse(r.Cells["runda"].Value.ToString(), out max) ?
-                                       max : 0);
+                //int max = 0;
+                //var MaxID2 = dgw.Rows.Cast<DataGridViewRow>()
+                //            .Max(r => int.TryParse(r.Cells["runda"].Value.ToString(), out max) ?
+                //                       max : 0);
 
                 DataTable DTsend = new DataTable();
                 DTsend = new DataTable();
@@ -877,7 +878,8 @@ where id= (select id_adresa_dostave from na_stol where id_stol = '" + _odabraniS
                 {
                     if (dgw.Rows[i].Cells["chb_naplati"].FormattedValue.ToString() == "True")
                     {
-                        if (max == int.Parse(dgw.Rows[i].Cells[0].FormattedValue.ToString()) || (max == int.Parse(dgw.Rows[i].Cells[0].FormattedValue.ToString()) && DTpostavke.Rows[0]["bool_direct_print_kuhinja"].ToString() == "0"))
+                        //if (max == int.Parse(dgw.Rows[i].Cells[0].FormattedValue.ToString()) || (max == int.Parse(dgw.Rows[i].Cells[0].FormattedValue.ToString()) && DTpostavke.Rows[0]["bool_direct_print_kuhinja"].ToString() == "0"))
+                        if (DTpostavke.Rows[0]["bool_direct_print_kuhinja"].ToString() == "0")
                         {
                             row = DTsend.NewRow();
                             row["broj_racuna"] = _odabraniStol;
@@ -903,6 +905,8 @@ where id= (select id_adresa_dostave from na_stol where id_stol = '" + _odabraniS
                     }
                 }
 
+                PostaviBrojNarudzbe();
+
                 if (DTpostavkePrinter.Rows[0]["windows_printer_sank"].ToString() != "Nije instaliran")
                     PosPrint.classPosPrintKuhinja.PrintOnPrinter1(DTsend);
 
@@ -919,34 +923,52 @@ where id= (select id_adresa_dostave from na_stol where id_stol = '" + _odabraniS
                 //Ako je instaliran printer && ako ima bilo koja oznacena grupa u POS Postavke && Ako ima artikl na racunu koji se nalazi u oznacenoj grupi
                 if (DTpostavkePrinter.Rows[0][29].ToString() != "Nije instaliran" && PosPrint.classPosPrintKuhinja.listaOznacenihGrupa.Count > 0 && PosPrint.classPosPrintKuhinja.ArtiklIzOznaceneGrupePostojan)
                     PosPrint.classPosPrintKuhinja.PrintOnPrinter10(DTsend);
-                /*string printer1Naziv = DTpostavkePrinter.Rows[0]["windows_printer_name"].ToString();
-                string printer2Naziv = DTpostavkePrinter.Rows[0]["windows_printer_name2"].ToString();
-                string printer3Naziv = DTpostavkePrinter.Rows[0]["windows_printer_name3"].ToString();
-                string printer4Naziv = DTpostavkePrinter.Rows[0]["windows_printer_sank"].ToString();
 
-                if (printer1Naziv != "Nije instaliran" && printer1Naziv != "")
-                {
-                    PosPrint.classPosPrintKuhinja.broj_narudzbe = broj_narudzbe;
-                    PosPrint.classPosPrintKuhinja.PrintOnPrinter1(DTsend);
-                }
-
-                if (printer2Naziv != "Nije instaliran" && printer2Naziv != "")
-                {
-                    PosPrint.classPosPrintKuhinja.broj_narudzbe = broj_narudzbe;
-                    PosPrint.classPosPrintKuhinja.PrintOnPrinter1(DTsend);
-                }
-
-                if (printer3Naziv != "Nije instaliran" && printer3Naziv != "")
-                {
-                    PosPrint.classPosPrintKuhinja.broj_narudzbe = broj_narudzbe;
-                    PosPrint.classPosPrintKuhinja.PrintOnPrinter3(DTsend);
-                }
-                if (printer4Naziv != "Nije instaliran" && printer4Naziv != "")
-                {
-                    PosPrint.classPosPrintKuhinja.broj_narudzbe = broj_narudzbe;
-                    PosPrint.classPosPrintKuhinja.PrintOnPrinter1(DTsend);
-                }*/
+                classPosPrintKuhinja.broj_narudzbe = null;
             }
+        }
+
+        //Ova funkcija postavlja broj naruzdbe na sljedeci nacin:
+        //Runde: 7 -> Narudzbe: 7
+        //Runde: 7,7 -> Narudzbe: 7
+        //Runde: 7,7,8 -> Narudzbe: 7,8
+        //Runde: 7,7,8,8 -> Naruzdbe: 7,8
+        //Itd..
+        private void PostaviBrojNarudzbe()
+        {
+            string brojNarudzbe = "";
+            string currentBroj = "";
+
+            for (int i = 0; i < dgw.Rows.Count; i++)
+            {
+                currentBroj = dgw.Rows[i].Cells["runda"].Value.ToString();
+
+                if (brojNarudzbe == "")
+                    brojNarudzbe += currentBroj;
+                else
+                {
+                    if (!BrojNarudzbeContainsCurrentBroj(brojNarudzbe, currentBroj))
+                        brojNarudzbe += "," + currentBroj;
+                }
+            }
+
+            classPosPrintKuhinja.broj_narudzbe = brojNarudzbe;
+        }
+
+        //Ova funkcija vraća true ukoliko se u brojNarudzbe nalazi current broj.
+        //************Obavezan********** je cast u integer jer se uspoređuju brojevi, a ne stringovi i String1.Contains(String2) ne funkcionira u ovom slučaju za neke stvari.
+        private bool BrojNarudzbeContainsCurrentBroj(string brojNarudzbe, string currentBroj)
+        {
+            bool brojPostoji = false;
+            string[] brojevi = brojNarudzbe.Split(',');
+
+            foreach (string broj in brojevi)
+            {
+                if (Int32.Parse(broj) == Int32.Parse(currentBroj))
+                    brojPostoji = true;
+            }
+
+            return brojPostoji;
         }
 
         private void btnDellAll_Click(object sender, EventArgs e)

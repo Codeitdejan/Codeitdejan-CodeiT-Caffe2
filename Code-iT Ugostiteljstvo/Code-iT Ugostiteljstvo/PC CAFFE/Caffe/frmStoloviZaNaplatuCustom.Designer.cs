@@ -545,6 +545,7 @@
             this.sifra.HeaderText = "sifra";
             this.sifra.Name = "sifra";
             this.sifra.ReadOnly = true;
+            this.sifra.Visible = false;
             this.sifra.Width = 30;
             // 
             // id_skladiste

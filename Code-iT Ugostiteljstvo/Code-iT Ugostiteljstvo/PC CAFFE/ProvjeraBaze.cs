@@ -1101,6 +1101,34 @@ alter table partners add column hormonalni_nadomjestak character varying (500);"
                 classSQL.insert(sql);
             }
 
+            //Na_stol_naplaceno
+            if (DTremote.Select("table_name='na_stol_naplaceno'").Length == 0)
+            {
+                sql = $@"CREATE TABLE public.na_stol_naplaceno
+                        (
+                            id_stol integer,
+                            sifra character varying(25),
+                            broj_narudzbe character varying(7),
+                            kom numeric,
+                            id_poslovnica integer,
+                            id_skladiste character varying(100),
+                            mpc numeric,
+                            vpc numeric,
+                            porez numeric,
+                            porez_potrosnja numeric,
+                            br numeric,
+                            jelo character varying(50),
+                            skinuto integer,
+                            id_zaposlenik integer,
+                            dod integer,
+                            pol integer,
+                            id_adresa_dostave numeric,
+                            rabat numeric,
+                            id serial primary key
+                        )";
+                classSQL.insert(sql);
+            }
+
             //---------------------------------------RACUNI------------------------------------
             if (DTremote.Select("table_name='racuni' AND column_name='editirano'").Length == 0)
             {

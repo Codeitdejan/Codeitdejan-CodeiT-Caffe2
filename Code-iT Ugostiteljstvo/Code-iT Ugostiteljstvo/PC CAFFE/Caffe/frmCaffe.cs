@@ -1433,7 +1433,8 @@ namespace PCPOS.Caffe
 
             if (_OdabraniStol != null)
             {
-                int broj_narudzbe = getBrojNarudzbe(id_ducan);
+                //int broj_narudzbe = getBrojNarudzbe(id_ducan);
+                int broj_narudzbe = GetZadnjiBrojNarudzbe(id_ducan);
                 int zadnji_broj = 0;
                 DataTable DTzadnji = classSQL.select("SELECT MAX(br) FROM na_stol WHERE id_stol='" + _OdabraniStol + "' AND id_poslovnica='" + DSpostavke.Tables[0].Rows[0]["default_ducan"].ToString() + "'", "na_stol").Tables[0];
                 if (DTzadnji.Rows.Count > 0)
@@ -1641,6 +1642,31 @@ namespace PCPOS.Caffe
             }
         }
 
+        private int GetZadnjiBrojNarudzbe(string id_ducan)
+        {
+            string sql = "SELECT MAX(CAST (broj_narudzbe AS numeric)) as broj_narudzbe FROM na_stol WHERE id_poslovnica='" + id_ducan + "'";
+            string sql2 = "SELECT MAX(CAST (broj_narudzbe AS numeric)) as broj_narudzbe FROM na_stol_naplaceno WHERE id_poslovnica='" + id_ducan + "'";
+            DataTable DTZadnjiBr = classSQL.select(sql, "na_stol").Tables[0];
+            DataTable DTZadnjiBr2 = classSQL.select(sql2, "na_stol_naplaceno").Tables[0];
+
+            int broj1=0, broj2=0;
+            if (!string.IsNullOrEmpty(DTZadnjiBr.Rows[0]["broj_narudzbe"].ToString()))
+                broj1= Int32.Parse(DTZadnjiBr.Rows[0]["broj_narudzbe"].ToString());
+            if (!string.IsNullOrEmpty(DTZadnjiBr2.Rows[0]["broj_narudzbe"].ToString()))
+                broj2 = Int32.Parse(DTZadnjiBr2.Rows[0]["broj_narudzbe"].ToString());
+
+            if(broj1!=0 && broj2 != 0)
+                return broj1 > broj2 ? broj1+1 : broj2+1;
+
+            if (broj1 != 0 && broj2 == 0)
+                return broj1+1;
+
+            if (broj1 == 0 && broj2 != 0)
+                return broj2+1;
+
+            return 1;
+        }
+
         private string dg(int row, string cell)
         {
             return dgw.Rows[row].Cells[cell].FormattedValue.ToString();
@@ -1741,7 +1767,7 @@ namespace PCPOS.Caffe
             }
 
             brRac = brojRacuna();
-            classPosPrintKuhinja.broj_narudzbe = brRac;
+            //classPosPrintKuhinja.broj_narudzbe = brRac;
 
             string sql = "INSERT INTO racuni (broj_racuna,id_kupac,datum_racuna,id_ducan,id_kasa,id_blagajnik," +
                 "ukupno_gotovina,ukupno_kartice,ukupno,storno,dobiveno_gotovina,id_stol,novo,godina,nacin_placanja,popust_cijeli_racun, popust_racun_kartica_kupca, napomena" + (Class.Postavke.is_beauty ? ", beauty_partner" : "") + ") " +
