@@ -626,5 +626,22 @@ namespace PCPOS
                 lblNbc.Text = Convert.ToDouble(DTRoba.Rows[0]["nc"].ToString()).ToString("#0.00");
             }
         }
+
+        private void txtSifraArtikla_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                if(txtSifraArtikla.Text == "")
+                SelectRoba();
+                else
+                {
+                    lblLoading.Visible = true;
+                    Search();
+                }
+
+            }
+        }
+
+
     }
 }
