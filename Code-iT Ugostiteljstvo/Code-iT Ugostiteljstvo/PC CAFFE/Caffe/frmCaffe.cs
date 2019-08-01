@@ -34,6 +34,7 @@ namespace PCPOS.Caffe
             this.BackColor = Class.Postavke.backGround;
         }
 
+        public int idTrenutneNarudzbe;
         private int idPodgrupa { get; set; }
         private int idGrupa { get; set; }
 
@@ -50,7 +51,7 @@ namespace PCPOS.Caffe
 
         public string DobivenoGotovina { get; set; }
         private bool Bline_display = false;
-        public string id_ducan { get; set; }
+        public static string id_ducan { get; set; }
         public string id_kasa { get; set; }
         public string sifra_skladiste { get; set; }
         public DataSet DSpostavke;
@@ -1620,14 +1621,6 @@ namespace PCPOS.Caffe
             }
         }
 
-        //private void PredracunSalji(string o_stol, DataTable DTsend)
-        //{
-        //    PosPrint.classPosPrintCaffePredracun.PrintReceipt(DTsend, "", "Predračun", sifraPartnera, "", "Predračun", "G", o_stol);
-        //    if (DTpostavkePrinter.Rows[0]["windows_printer_name2"].ToString() != "Nije instaliran")
-        //    {
-        //        PosPrint.classPosPrintKuhinja.PrintReceipt(DTsend);
-        //    }
-        //}
 
         private string GetBrojNarudzbe(string stol, string poslovnica)
         {
@@ -1642,7 +1635,7 @@ namespace PCPOS.Caffe
             }
         }
 
-        private int GetZadnjiBrojNarudzbe(string id_ducan)
+        private static int GetZadnjiBrojNarudzbe(string id_ducan)
         {
             string sql = "SELECT MAX(CAST (broj_narudzbe AS numeric)) as broj_narudzbe FROM na_stol WHERE id_poslovnica='" + id_ducan + "'";
             string sql2 = "SELECT MAX(CAST (broj_narudzbe AS numeric)) as broj_narudzbe FROM na_stol_naplaceno WHERE id_poslovnica='" + id_ducan + "'";
@@ -1665,6 +1658,41 @@ namespace PCPOS.Caffe
                 return broj2+1;
 
             return 1;
+        }
+
+
+        private void InsertIntoNa_Stol_Naplaceno(DataTable DTArtikli)
+        {
+            //Constant variables: id_stol, broj_narudzbe, id_poslovnica, id_zaposlenik, pol
+            int id_stol = -1; // Po ovome znamo da narudžba nije išla na stol
+            string broj_narudzbe = Convert.ToString(GetZadnjiBrojNarudzbe(id_ducan));
+            int id_poslovnica = Int32.Parse(id_ducan);
+            int id_zaposlenik = Int32.Parse(Properties.Settings.Default.id_zaposlenik);
+            int br = 0;
+            int pol = -1;
+            //Empty variables: jelo, !!!!skinuto, id_adresa_dostave
+            //################ SKINUTO !!!!!!!!! -> Pošto se ovaj column ne koristi, koristit ćemo ga za broj računa AKO IKAD BUDE POTREBAN
+            //Default variables: id -> AutoIncrement
+            //Varying variables: sifra,kom,mpc,vpc,porez,porez_potrosnja, dod, pol, rabat, id_skladiste
+
+            foreach (DataRow row in DTArtikli.Rows)
+            {
+                string sifra = row["sifra_robe"].ToString();
+                int kom = Int32.Parse(row["kolicina"].ToString());
+                string mpc = row["mpc"].ToString().Replace(',','.');
+                string vpc = row["vpc"].ToString().Replace(',', '.');
+                string porez = row["porez"].ToString().Replace(',', '.');
+                string id_skladiste = row["id_skladiste"].ToString();
+                string porez_potrosnja = row["porez_potrosnja"].ToString().Replace(',', '.');
+                int dod = Int32.Parse(row["dod"].ToString());
+                string rabat = row["rabat"].ToString().Replace(',', '.');
+
+                string sqlQuery = $@"INSERT INTO na_stol_naplaceno 
+                            VALUES({id_stol},'{sifra}','{broj_narudzbe}',{kom},{id_poslovnica},'{id_skladiste}',
+                            CAST ({mpc} AS NUMERIC),CAST ({vpc} AS NUMERIC),CAST ({porez} AS NUMERIC),CAST ({porez_potrosnja} AS NUMERIC),
+                            {br},NULL,{brRac},{id_zaposlenik},{dod},{pol},NULL,CAST ({rabat} AS NUMERIC),DEFAULT)";
+                classSQL.insert(sqlQuery);
+            }
         }
 
         private string dg(int row, string cell)
@@ -1767,6 +1795,7 @@ namespace PCPOS.Caffe
             }
 
             brRac = brojRacuna();
+            classPosPrintKuhinja.broj_narudzbe = Convert.ToString(GetZadnjiBrojNarudzbe(id_ducan));
             //classPosPrintKuhinja.broj_narudzbe = brRac;
 
             string sql = "INSERT INTO racuni (broj_racuna,id_kupac,datum_racuna,id_ducan,id_kasa,id_blagajnik," +
@@ -1810,6 +1839,7 @@ namespace PCPOS.Caffe
             catch { }
 
             provjera_sql(classSQL.insert(sql));
+
 
             if (Util.Korisno.kartica_kupca && kartica_kupca.Length > 0)
             {
@@ -1866,6 +1896,8 @@ namespace PCPOS.Caffe
                     ZaprimiNarudzbu(brRac, sifra, dg(i, "kolicina"), _OdabraniStol, dt, brNarudzbe, id_ducan);
                 }
             }
+
+            InsertIntoNa_Stol_Naplaceno(DTsend);
 
             sifra_skladiste = "";
             provjera_sql(SQL.SQLracun.InsertStavke(DTsend));
